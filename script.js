@@ -398,7 +398,8 @@ React.createElement(Route, { path: "/FreedomSkybox/write", component: Write }),
 React.createElement(Route, { path: "/FreedomSkybox/explore", component: Explore }),
 React.createElement(Route, { path: "/FreedomSkybox/place", component: Place }),
 React.createElement(Route, { path: "/FreedomSkybox/story", component: Display }),
-React.createElement(Route, { path: "*", component: Landing })),
+React.createElement(Route, { path: "*", component: Landing }),
+React.createElement(Route, { component: Landing })),
 
 document.getElementById('app'));
 
