@@ -136,7 +136,7 @@ class Write extends React.Component {
 
 class Explore extends React.Component {
   btnClickAbout() {
-    browserHistory.push('/');
+    browserHistory.push('/FreedomSkybox');
   }
 
   btnClickWrite() {
@@ -332,7 +332,7 @@ function myOnClick(event) {
     //console.log('story ' + snapshot.val())
     displayStory = snapshot.val();
     toggleStoryDisplay = true;
-    browserHistory.push('/story');
+    browserHistory.push('/FreedomSkybox/story');
   });
 }
 
