@@ -203,10 +203,10 @@ class Place extends React.Component {
         clearTimeout(timeout);
       }, 500);
     }
-    if (this.PlaceRef) {
+    //if (this.PlaceRef) {
       this.setState({ lastTap: currentTime });
-    }
-    console.log(this.PlaceRef);
+    //}
+    //console.log(this.PlaceRef);
 
     //lastTap = currentTime;
     //console.log(lastTap);
