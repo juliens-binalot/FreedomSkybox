@@ -105,10 +105,13 @@ class Write extends React.Component {
     browserHistory.push('/FreedomSkybox-explore');
   }
 
-  btnClickSubmit() {
+  btnClickSubmit(e) {
+    e.preventDefault();
     globalMsg = this.state.value;
     //console.log(globalMsg);
-    browserHistory.push('/FreedomSkybox-place');
+    if (globalMsg) {
+      browserHistory.push('/FreedomSkybox-place');
+    }
   }
 
   render() {
@@ -123,9 +126,9 @@ class Write extends React.Component {
       React.createElement("button", { id: "write-btn-e", className: "btn btn-default", onClick: this.btnClickExplore }, "Explore"))),
 
 
-      React.createElement("form", { className: "form" },
+      React.createElement("div", { className: "form" },
       React.createElement("textarea", { id: "msgInput", rows: "5", cols: "50", onChange: this.handleChange, value: this.state.value, placeholder: "Write your story here." }),
-      React.createElement("input", { id: "submit-btn", className: "btn btn-default", type: "submit", value: "submit", onClick: this.btnClickSubmit }))));
+      React.createElement("input", { id: "submit-btn", className: "btn btn-default", type: "button", value: "submit", onClick: this.btnClickSubmit }))));
 
 
 
@@ -220,7 +223,7 @@ class Place extends React.Component {
     let vec = new THREE.Vector3(); // create once and reuse
     let pos = new THREE.Vector3(); // create once and reuse
 
-    let targetZ = Math.random() * (20 - 0.1 + 0.1); //fix
+    let targetZ = Math.random() * (20 - -10 + -10); //fix
 
     vec.set(
     event.changedTouches[0].clientX / window.innerWidth * 2 - 1,
@@ -257,7 +260,7 @@ class Place extends React.Component {
     let vec = new THREE.Vector3(); // create once and reuse
     let pos = new THREE.Vector3(); // create once and reuse
 
-    let targetZ = Math.random() * (20 - 0.1 + 0.1); //fix
+    let targetZ = Math.random() * (20 - -10 + -10); //fix
 
     vec.set(
     event.clientX / window.innerWidth * 2 - 1,
