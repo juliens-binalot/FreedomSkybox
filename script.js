@@ -34,7 +34,7 @@ const camera = new THREE.PerspectiveCamera(fov, aspect, near, far); // 4 argumen
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
-camera.position.z = 10;
+camera.position.z = 3;
 const domEvents = new THREEx.DomEvents(camera, renderer.domElement);
 
 /* lighting */
@@ -66,11 +66,9 @@ class Landing extends React.Component {
     return (
       React.createElement("div", { className: "overlay-landing" },
       React.createElement("div", null,
-      React.createElement("p", null, " Hi, Welcome to Freedom Skybox!"), React.createElement("br", null),
+      React.createElement("p", null, " Hi, Welcome to Freedom Skybox!"),
       React.createElement("p", null, "Click the yellow object to begin."),
-      React.createElement("div", { className: "btns" },
-      React.createElement("button", { className: "btn btn-default btns-l", onClick: this.btnClickWrite }, "Write"),
-      React.createElement("button", { className: "btn btn-default btns-l", onClick: this.btnClickExplore }, "Explore")))));
+      React.createElement("div", { className: "btns" }))));
 
 
 
@@ -161,6 +159,11 @@ class Explore extends React.Component {
 class Place extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      lastTap: 0 };
+
+
+    this.PlaceRef = React.createRef();
 
     this.handleDblClick = this.handleDblClick.bind(this);
     this.process_touchstart = this.process_touchstart.bind(this);
@@ -170,37 +173,58 @@ class Place extends React.Component {
   componentDidMount() {
     document.addEventListener('dblclick', this.handleDblClick, false);
     // add double touch
-    document.addEventListener('touchstart', this.process_touchstart, false);
+    document.addEventListener('touchend', this.process_touchstart, false);
+
   }
   componentWillUnmount() {
     document.removeEventListener('dblclick', this.handleDblClick, false);
     // add double touch
-    document.removeEventListener('touchstart', this.process_touchstart, false);
+    document.removeEventListener('touchend', this.process_touchstart, false);
   }
+
 
   // touchstart handler
   process_touchstart(ev) {
     // Use the event's data to call out to the appropriate gesture handlers
-    console.log("process touch");
-    switch (ev.touches.length) {
-      case 1:break;
-      case 2:handleDblTouch(ev);break;
-      case 3:break;
-      default:gesture_not_supported(ev);break;}
+    //console.log("process touch");
+    var currentTime = new Date().getTime();
+    var lastTap = 0;
+    var tapLength = currentTime - this.state.lastTap;
+    //var tapLength = currentTime - lastTap;
+    var timeout;
+    clearTimeout(timeout);
+    if (tapLength < 500 && tapLength > 0) {
+      console.log('Double Tap');
+      this.handleDblTouch(event);
+      event.preventDefault();
+    } else {
+      timeout = setTimeout(function () {
+        //console.log('Single Tap (timeout)');
+        clearTimeout(timeout);
+      }, 500);
+    }
+    if (this.PlaceRef) {
+      this.setState({ lastTap: currentTime });
+    }
+    console.log(this.PlaceRef);
 
+    //lastTap = currentTime;
+    //console.log(lastTap);
   }
 
   handleDblTouch(event) {
     console.log("handle dbl touch");
+    console.log(event);
     //console.log(event.clientX, event.clientY);
+    console.log(event.changedTouches);
     let vec = new THREE.Vector3(); // create once and reuse
     let pos = new THREE.Vector3(); // create once and reuse
 
     let targetZ = Math.random() * (20 - 0.1 + 0.1); //fix
 
     vec.set(
-    event.touches[0].clientX / window.innerWidth * 2 - 1,
-    -(event.touches[0].clientY / window.innerHeight) * 2 + 1,
+    event.changedTouches[0].clientX / window.innerWidth * 2 - 1,
+    -(event.changedTouches[0].clientY / window.innerHeight) * 2 + 1,
     0.5);
 
     vec.unproject(camera);
@@ -268,7 +292,7 @@ class Place extends React.Component {
   render() {
     return (
       React.createElement("div", { className: "header" },
-      React.createElement("p", null, " Double tap / left click anywhere on the screen to place your story ")));
+      React.createElement("p", null, " Double tap / double left click anywhere on the screen to place your story ")));
 
 
   }}
