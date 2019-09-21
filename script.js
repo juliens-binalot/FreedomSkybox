@@ -206,17 +206,17 @@ class Place extends React.Component {
     if (this.PlaceRef) {
       this.setState({ lastTap: currentTime });
     }
-    console.log(this.PlaceRef);
+    //console.log(this.PlaceRef);
 
     //lastTap = currentTime;
     //console.log(lastTap);
   }
 
   handleDblTouch(event) {
-    console.log("handle dbl touch");
-    console.log(event);
+    //console.log("handle dbl touch");
+    //console.log(event);
     //console.log(event.clientX, event.clientY);
-    console.log(event.changedTouches);
+    //console.log(event.changedTouches);
     let vec = new THREE.Vector3(); // create once and reuse
     let pos = new THREE.Vector3(); // create once and reuse
 
