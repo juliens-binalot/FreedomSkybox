@@ -56,10 +56,10 @@ globalMsg = "";
 
 class Landing extends React.Component {
   btnClickWrite() {
-    browserHistory.push('/FreedomSkybox/write');
+    browserHistory.push('/FreedomSkybox-write');
   }
   btnClickExplore() {
-    browserHistory.push('/FreedomSkybox/explore');
+    browserHistory.push('/FreedomSkybox-explore');
   }
 
   render() {
@@ -104,13 +104,13 @@ class Write extends React.Component {
   }
 
   btnClickExplore() {
-    browserHistory.push('/FreedomSkybox/explore');
+    browserHistory.push('/FreedomSkybox-explore');
   }
 
   btnClickSubmit() {
     globalMsg = this.state.value;
     //console.log(globalMsg);
-    browserHistory.push('/FreedomSkybox/place');
+    browserHistory.push('/FreedomSkybox-place');
   }
 
   render() {
@@ -140,7 +140,7 @@ class Explore extends React.Component {
   }
 
   btnClickWrite() {
-    browserHistory.push('/FreedomSkybox/write');
+    browserHistory.push('/FreedomSkybox-write');
   }
 
   render() {
@@ -162,14 +162,70 @@ class Place extends React.Component {
   constructor(props) {
     super(props);
 
-    this.handleClick = this.handleDblClick.bind(this);
+    this.handleDblClick = this.handleDblClick.bind(this);
+    this.process_touchstart = this.process_touchstart.bind(this);
+    this.handleDblTouch = this.handleDblTouch.bind(this);
 
   }
   componentDidMount() {
     document.addEventListener('dblclick', this.handleDblClick, false);
+    // add double touch
+    document.addEventListener('touchstart', this.process_touchstart, false);
   }
   componentWillUnmount() {
     document.removeEventListener('dblclick', this.handleDblClick, false);
+    // add double touch
+    document.removeEventListener('touchstart', this.process_touchstart, false);
+  }
+
+  // touchstart handler
+  process_touchstart(ev) {
+    // Use the event's data to call out to the appropriate gesture handlers
+    console.log("process touch");
+    switch (ev.touches.length) {
+      case 1:break;
+      case 2:handleDblTouch(ev);break;
+      case 3:break;
+      default:gesture_not_supported(ev);break;}
+
+  }
+
+  handleDblTouch(event) {
+    console.log("handle dbl touch");
+    //console.log(event.clientX, event.clientY);
+    let vec = new THREE.Vector3(); // create once and reuse
+    let pos = new THREE.Vector3(); // create once and reuse
+
+    let targetZ = Math.random() * (20 - 0.1 + 0.1); //fix
+
+    vec.set(
+    event.touches[0].clientX / window.innerWidth * 2 - 1,
+    -(event.touches[0].clientY / window.innerHeight) * 2 + 1,
+    0.5);
+
+    vec.unproject(camera);
+
+    vec.sub(camera.position).normalize();
+
+    //var distance = (targetZ-camera.position.z) / vec.z;
+    var distance = -camera.position.z / vec.z;
+
+    pos.copy(camera.position).add(vec.multiplyScalar(distance));
+    pos.z = targetZ;
+
+    let globalX = pos.x;
+    let globalY = pos.y;
+    let globalZ = pos.z;
+
+    //console.log(globalX, globalY);
+
+    firebase.database().ref('shape/').push().set({
+      story: globalMsg,
+      x: globalX,
+      y: globalY,
+      z: globalZ });
+
+    browserHistory.push('/FreedomSkybox-explore');
   }
 
   handleDblClick(event) {
@@ -206,13 +262,13 @@ class Place extends React.Component {
       y: globalY,
       z: globalZ });
 
-    browserHistory.push('/FreedomSkybox/explore');
+    browserHistory.push('/FreedomSkybox-explore');
   }
 
   render() {
     return (
       React.createElement("div", { className: "header" },
-      React.createElement("h4", null, " Double left click anywhere on the screen to place your story ")));
+      React.createElement("p", null, " Double tap / left click anywhere on the screen to place your story ")));
 
 
   }}
@@ -313,6 +369,7 @@ requestAnimationFrame(render);
 
 /* to resize window */
 window.addEventListener('resize', onWindowResize, false);
+window.addEventListener('orientationchange', onWindowResize, false);
 
 function onWindowResize() {
 
@@ -332,14 +389,14 @@ function myOnClick(event) {
     //console.log('story ' + snapshot.val())
     displayStory = snapshot.val();
     toggleStoryDisplay = true;
-    browserHistory.push('/story');
+    browserHistory.push('/FreedomSkybox-story');
   });
 }
 
 function Display(props) {
 
   btnClickExplore = () => {
-    browserHistory.push('/FreedomSkybox/explore');
+    browserHistory.push('/FreedomSkybox-explore');
   };
 
   return (
@@ -386,7 +443,7 @@ class Story extends React.Component {
 
     } else
     {
-      {browserHistory.push('/FreedomSkybox/explore');}
+      {browserHistory.push('/FreedomSkybox-explore');}
     }
   }}
 
@@ -394,10 +451,10 @@ class Story extends React.Component {
 ReactDOM.render(
 React.createElement(Router, { history: browserHistory },
 React.createElement(Route, { path: "/FreedomSkybox", component: Landing }),
-React.createElement(Route, { path: "/FreedomSkybox/write", component: Write }),
-React.createElement(Route, { path: "/FreedomSkybox/explore", component: Explore }),
-React.createElement(Route, { path: "/FreedomSkybox/place", component: Place }),
-React.createElement(Route, { path: "/FreedomSkybox/story", component: Display }),
+React.createElement(Route, { path: "/FreedomSkybox-write", component: Write }),
+React.createElement(Route, { path: "/FreedomSkybox-explore", component: Explore }),
+React.createElement(Route, { path: "/FreedomSkybox-place", component: Place }),
+React.createElement(Route, { path: "/FreedomSkybox-story", component: Display }),
 React.createElement(Route, { path: "*", component: Landing })),
 
 document.getElementById('app'));
