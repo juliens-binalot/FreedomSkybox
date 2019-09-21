@@ -165,9 +165,6 @@ class Place extends React.Component {
     this.state = {
       lastTap: 0 };
 
-
-    this.PlaceRef = React.createRef();
-
     this.handleDblClick = this.handleDblClick.bind(this);
     this.process_touchstart = this.process_touchstart.bind(this);
     this.handleDblTouch = this.handleDblTouch.bind(this);
