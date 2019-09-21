@@ -128,7 +128,7 @@ class Write extends React.Component {
 
       React.createElement("div", { className: "form" },
       React.createElement("textarea", { id: "msgInput", rows: "5", cols: "50", onChange: this.handleChange, value: this.state.value, placeholder: "Write your story here." }),
-      React.createElement("input", { id: "submit-btn", className: "btn btn-default", type: "button", value: "submit", onClick: this.btnClickSubmit }))));
+      React.createElement("button", { id: "submit-btn", className: "btn btn-default", value: "submit", onClick: this.btnClickSubmit }))));
 
 
 
