@@ -42,17 +42,40 @@ const domEvents = new THREEx.DomEvents(camera, renderer.domElement);
   const color = 0xFFFFFF;
   const intensity = 1;
   const light = new THREE.DirectionalLight(color, intensity);
-  light.position.set(-1, 2, 4);
+  light.position.set(-1, 1, 10);
   scene.add(light);
 }
 
 // controls
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.minDistance = 1;
-controls.maxDistance = 50;
+controls.minDistance = -1500;
+controls.maxDistance = 1500;
+controls.rotateSpeed = 0.5;
+controls.zoomSpeed = 0.5;
+controls.panSpeed = 0.8;
+
+//const controls = new THREE.TrackballControls( camera );
+
+/*const controls = new THREE.TrackballControls( camera );
+
+				controls.rotateSpeed = 2.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+
+			
+				controls.noPan = false;
+
+				controls.staticMoving = false;
+				controls.dynamicDampingFactor = 0.3;
+
+				controls.keys = [ 65, 83, 68 ];
+
+				controls.addEventListener(  'change', render);*/
+
 
 // globalInput
 globalMsg = "";
+globalFeeling = "";
 
 class Landing extends React.Component {
   btnClickWrite() {
@@ -80,7 +103,8 @@ class Write extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: "" };
+      value: "",
+      feeling: "" };
 
 
     this.handleChange = this.handleChange.bind(this);
@@ -89,7 +113,8 @@ class Write extends React.Component {
   }
 
   handleChange(event) {
-    this.setState({ value: event.target.value });
+    this.setState({ [event.target.name]: event.target.value });
+    //console.log(this.state.feeling);
   }
 
   handleSubmit(event) {
@@ -108,6 +133,7 @@ class Write extends React.Component {
   btnClickSubmit(e) {
     e.preventDefault();
     globalMsg = this.state.value;
+    globalFeeling = this.state.feeling;
     //console.log(globalMsg);
     if (globalMsg) {
       browserHistory.push('/FreedomSkybox-place');
@@ -127,7 +153,26 @@ class Write extends React.Component {
 
 
       React.createElement("div", { className: "form" },
-      React.createElement("textarea", { id: "msgInput", rows: "5", cols: "50", onChange: this.handleChange, value: this.state.value, placeholder: "Write your story here." }),
+      React.createElement("textarea", { id: "msgInput", name: "value", rows: "5", cols: "50", onChange: this.handleChange, value: this.state.value, placeholder: "Write your story here." }),
+      React.createElement("div", { className: "feelingSelect" },
+      React.createElement("div", null,
+      React.createElement("p", null, " How are you feeling? ")),
+
+      React.createElement("div", null,
+      React.createElement("select", { id: "feeling", name: "feeling", onChange: this.handleChange, value: this.state.feeling },
+      React.createElement("option", { value: "", disabled: true, defaultValue: true }, "Select"),
+      React.createElement("option", { value: "joyful" }, "Joyful"),
+      React.createElement("option", { value: "excited" }, "Excited"),
+      React.createElement("option", { value: "love" }, "In love"),
+      React.createElement("option", { value: "anxious" }, "Anxious"),
+      React.createElement("option", { value: "angry" }, "Angry"),
+      React.createElement("option", { value: "sad" }, "Sad"),
+      React.createElement("option", { value: "lonely" }, "Lonely"),
+      React.createElement("option", { value: "remorseful" }, "Remorseful"),
+      React.createElement("option", { value: "meh" }, "meh")))),
+
+
+
       React.createElement("button", { id: "submit-btn", className: "btn btn-default", value: "submit", onClick: this.btnClickSubmit }, "Submit"))));
 
 
@@ -163,8 +208,11 @@ class Place extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      lastTap: 0 };
+      lastTap: 0
 
+
+      //this.PlaceRef = React.createRef();
+    };
     this.handleDblClick = this.handleDblClick.bind(this);
     this.process_touchstart = this.process_touchstart.bind(this);
     this.handleDblTouch = this.handleDblTouch.bind(this);
@@ -182,6 +230,46 @@ class Place extends React.Component {
     document.removeEventListener('touchend', this.process_touchstart, false);
   }
 
+  // get z coordinates
+  getZvalue(e)
+  {
+    var vector = new THREE.Vector3();
+    var raycaster = new THREE.Raycaster();
+    var dir = new THREE.Vector3();
+
+    //var projector = new THREE.Vector3();
+    let dx = event.clientX;
+    let dy = event.clientY;
+    var mouse3D = new THREE.Vector3(dx / window.innerWidth * 2 - 1, -dy / window.innerHeight * 2 + 1, 0.5);
+    //vector.unproject(camera);
+    mouse3D.unproject(camera);
+    mouse3D.sub(camera.position);
+    mouse3D.normalize();
+
+
+    var rayCaster = new THREE.Raycaster(camera.position, mouse3D);
+    var scale = window.innerWidth * 2;
+    var rayDir = new THREE.Vector3(rayCaster.ray.direction.x, rayCaster.ray.direction.y, rayCaster.ray.direction.z);
+    var rayVector = new THREE.Vector3(camera.position.x + rayDir.x, camera.position.y + rayDir.y, camera.position.z + rayDir.z);
+    return rayVector;
+  }
+
+  postData(globalX, globalY, globalZ) {
+    var d = new Date();
+    let time = d.getHours() + ':' + d.getMinutes();
+    let month = d.getMonth() + 1;
+    let date = d.getDate().toString() + '/' + month.toString() + '/' + d.getFullYear().toString();
+    //console.log(time);
+
+    firebase.database().ref('shape/').push().set({
+      story: globalMsg,
+      x: globalX,
+      y: globalY,
+      z: globalZ,
+      feeling: globalFeeling,
+      time: time + '|' + date });
+
+  }
 
   // touchstart handler
   process_touchstart(ev) {
@@ -203,8 +291,8 @@ class Place extends React.Component {
         clearTimeout(timeout);
       }, 500);
     }
-    //if (this.PlaceRef) {
-      this.setState({ lastTap: currentTime });
+    //if (this.PlaceRef){
+    this.setState({ lastTap: currentTime });
     //}
     //console.log(this.PlaceRef);
 
@@ -213,10 +301,8 @@ class Place extends React.Component {
   }
 
   handleDblTouch(event) {
-    console.log("handle dbl touch");
-    console.log(event);
-    //console.log(event.clientX, event.clientY);
-    console.log(event.changedTouches);
+    let mouseCoordinates = this.getZvalue(event);
+
     let vec = new THREE.Vector3(); // create once and reuse
     let pos = new THREE.Vector3(); // create once and reuse
 
@@ -237,27 +323,39 @@ class Place extends React.Component {
     pos.copy(camera.position).add(vec.multiplyScalar(distance));
     pos.z = targetZ;
 
-    let globalX = pos.x;
-    let globalY = pos.y;
-    let globalZ = pos.z;
+    /*let globalX = pos.x;
+                     let globalY = pos.y;
+                     let globalZ = pos.z;*/
+
+    let globalX = mouseCoordinates.x;
+    let globalY = mouseCoordinates.y;
+    let globalZ = mouseCoordinates.z;
 
     //console.log(globalX, globalY);
 
-    firebase.database().ref('shape/').push().set({
+    /*firebase.database().ref('shape/').push().set({
       story: globalMsg,
       x: globalX,
       y: globalY,
-      z: globalZ });
+      z: globalZ,
+      feeling: globalFeeling
+    });*/
+    this.postData(globalX, globalY, globalZ);
 
     browserHistory.push('/FreedomSkybox-explore');
   }
 
   handleDblClick(event) {
     //console.log(event.clientX, event.clientY);
+    let mouseCoordinates = this.getZvalue(event);
+
+
     let vec = new THREE.Vector3(); // create once and reuse
     let pos = new THREE.Vector3(); // create once and reuse
 
     let targetZ = Math.random() * (20 - -10 + -10); //fix
+    var distance = -camera.position.z / vec.z;
+
 
     vec.set(
     event.clientX / window.innerWidth * 2 - 1,
@@ -266,49 +364,86 @@ class Place extends React.Component {
 
     vec.unproject(camera);
 
+
     vec.sub(camera.position).normalize();
 
+
     //var distance = (targetZ-camera.position.z) / vec.z;
-    var distance = -camera.position.z / vec.z;
+    //var distance = (-camera.position.z) / vec.z;
 
     pos.copy(camera.position).add(vec.multiplyScalar(distance));
     pos.z = targetZ;
 
-    let globalX = pos.x;
-    let globalY = pos.y;
-    let globalZ = pos.z;
+    /*let globalX = pos.x;
+                     let globalY = pos.y;
+                     let globalZ = pos.z;
+                     */
+
+    let globalX = mouseCoordinates.x;
+    let globalY = mouseCoordinates.y;
+    let globalZ = mouseCoordinates.z;
 
     //console.log(globalX, globalY);
+    //console.log(globalZ);
 
-    firebase.database().ref('shape/').push().set({
-      story: globalMsg,
-      x: globalX,
-      y: globalY,
-      z: globalZ });
+    this.postData(globalX, globalY, globalZ);
 
     browserHistory.push('/FreedomSkybox-explore');
   }
 
   render() {
     return (
-      React.createElement("div", { className: "header" },
-      React.createElement("p", null, " Double tap / double left click anywhere on the screen to place your story ")));
+      React.createElement("div", { className: "placeHeader" },
+      React.createElement("p", null, " Double tap / double click anywhere on the screen to place your story ")));
 
 
   }}
 
 
 /*********** END OF REACT COMPONENTS ***********/
-
+function getColour(feeling) {
+  if (feeling == "joyful") {
+    return 'orange';
+  } else
+  if (feeling == "excited") {
+    return 'red';
+  } else
+  if (feeling == "love") {
+    return 'pink';
+  } else
+  if (feeling == "anxious") {
+    return 'green';
+  } else
+  if (feeling == "angry") {
+    return 'maroon';
+  } else
+  if (feeling == "sad") {
+    return 'blue';
+  } else
+  if (feeling == "lonely") {
+    return 'gray';
+  } else
+  if (feeling == "remorseful") {
+    return 'yellow';
+  } else
+  if (feeling == "meh") {
+    return 'white';
+  }
+  return '';
+}
 // stores 3d objects
 let cubes = [];
 function init() {
   var shapeRef = firebase.database().ref('shape/');
   shapeRef.on('child_added', function (data) {
+    // determine colour function
+    let colour = getColour(data.val().feeling);
     cubes.push(
-    makeInstance(data.key, createGeometry(), 'pink', data.val().x, data.val().y, data.val().z));
+    makeInstance(data.key, createGeometry(), colour /*'pink'*/, data.val().x, data.val().y, data.val().z));
 
   });
+
+  render();
 }
 function createGeometry() {
   /* below are geometry which defines the vertices of 3D object */
@@ -325,6 +460,8 @@ function makeInstance(id, geometry, color, x, y, z) {
   let max = window.innerWidth;
   let min = -window.innerWidth;
 
+  //console.log(color);
+
   // create basic material and set its color
   let material;
   // create basic material and set its color
@@ -332,8 +469,11 @@ function makeInstance(id, geometry, color, x, y, z) {
     color = '#fff591';
     material = new THREE.MeshPhongMaterial({ color });
   } else
-  {
+  if (!color) {
     material = new THREE.MeshNormalMaterial();
+  } else
+  {
+    material = new THREE.MeshPhongMaterial({ color, specular: '#03fca5', shininess: 20, emissive: 0x8e0578 });
   }
 
   // create mesh: consist of Geometry and Material
@@ -371,25 +511,11 @@ function makeInstance(id, geometry, color, x, y, z) {
   return shape;
 }
 
-renderer.render(scene, camera);
+//renderer.render(scene, camera);
 
-function render(time) {
-  time *= 0.001; //convert time to seconds
+//requestAnimationFrame(render);
+//animate();
 
-  cubes.forEach((cube, ndx) => {
-    const speed = 1 + ndx * .1;
-    const rot = time * speed;
-
-    cube.rotation.x = rot;
-    cube.rotation.y = rot;
-  });
-
-  renderer.render(scene, camera);
-
-  requestAnimationFrame(render);
-}
-
-requestAnimationFrame(render);
 
 /* to resize window */
 window.addEventListener('resize', onWindowResize, false);
@@ -428,10 +554,14 @@ function Display(props) {
     React.createElement("div", { className: "header-display" }),
 
     React.createElement(Explore, null),
-    React.createElement("div", null,
-    React.createElement("button", { id: "exitBtn", className: "btn btn-default", onClick: this.btnClickExplore }, "x"),
+    React.createElement("div", { className: "storyContainer" },
+    React.createElement("div", { id: "storyFlexParent" },
     React.createElement("div", { id: "story", className: "storyDisplay msg-wrapper" },
-    React.createElement("p", null, displayStory)))));
+    React.createElement("div", null,
+    React.createElement("p", { id: "story" }, displayStory))),
+
+
+    React.createElement("button", { id: "exitBtn", className: "btn btn-default", onClick: this.btnClickExplore }, "Close")))));
 
 
 
@@ -472,6 +602,38 @@ class Story extends React.Component {
   }}
 
 
+function render() {
+
+
+  renderer.render(scene, camera);
+
+  //requestAnimationFrame(render);
+  //requestAnimationFrame(animate);
+
+}
+
+function animate(time) {
+
+  time *= 0.001; //convert time to seconds
+
+
+  cubes.forEach((cube, ndx) => {
+    const speed = 1 + ndx * .1;
+    const rot = time * speed;
+
+    cube.rotation.x = rot;
+    cube.rotation.y = rot;
+
+  });
+
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+  controls.update();
+
+
+}
+
+
 ReactDOM.render(
 React.createElement(Router, { history: browserHistory },
 React.createElement(Route, { path: "/FreedomSkybox", component: Landing }),
@@ -483,4 +645,6 @@ React.createElement(Route, { path: "*", component: Landing })),
 
 document.getElementById('app'));
 
+
 init();
+animate();
