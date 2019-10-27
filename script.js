@@ -54,8 +54,8 @@ const domEvents = new THREEx.DomEvents(camera, renderer.domElement);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.minDistance = -1500;
 controls.maxDistance = 1500;
-controls.rotateSpeed = 0.5;
-controls.zoomSpeed = 0.5;
+controls.rotateSpeed = 0.8;
+controls.zoomSpeed = 0.8;
 controls.panSpeed = 0.8;
 
 //const controls = new THREE.TrackballControls( camera );
