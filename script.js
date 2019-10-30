@@ -1,6 +1,4 @@
-document.addEventListener('gesturestart', function (e) {
-    e.preventDefault();
-});
+
 
 var Router = ReactRouter.Router;
 var Route = ReactRouter.Route;
