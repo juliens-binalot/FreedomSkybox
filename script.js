@@ -92,7 +92,7 @@ class Landing extends React.Component {
       React.createElement("div", { className: "overlay-landing" },
       React.createElement("div", null,
       React.createElement("p", null, " Hi, Welcome to Freedom Skybox!"),
-      React.createElement("p", null, "Click the yellow object to begin."),
+      React.createElement("p", null, "Scroll out and click the yellow object to begin."),
       React.createElement("div", { className: "btns" }))));
 
 
