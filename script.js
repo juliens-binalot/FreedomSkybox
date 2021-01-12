@@ -36,7 +36,7 @@ const camera = new THREE.PerspectiveCamera(fov, aspect, near, far); // 4 argumen
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
-camera.position.z = 5;
+camera.position.z = 10;
 const domEvents = new THREEx.DomEvents(camera, renderer.domElement);
 
 /* lighting */
